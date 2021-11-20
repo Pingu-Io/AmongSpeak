@@ -1,4 +1,6 @@
 #if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #include <Windows.h>
 #endif
 
@@ -13,6 +15,8 @@
 #include "../include/teamspeak/clientlib_publicdefinitions.h"
 #include "../include/ts3_functions.h"
 #include "plugin.h"
+
+#include "utils/ramreader.h"
 
 static struct TS3Functions ts3Functions;
 
@@ -32,15 +36,17 @@ static struct TS3Functions ts3Functions;
 #define CHANNELINFO_BUFSIZE 512
 #define RETURNCODE_BUFSIZE 128
 
-#define PLUGIN_UNIQUE_NAME "AmongSus"
-#define PLUGIN_UNIQUE_VERSION "1.0"
-#define PLUGIN_UNIQUE_AUTHOR "Pingu-Io"
-#define PLUGIN_UNIQUE_DESCRIPTION "AMONGSUS!"
+#define PLUGIN_UNIQUE_NAME "AmongSpeak"
+#define PLUGIN_UNIQUE_VERSION "2.0"
+#define PLUGIN_UNIQUE_AUTHOR "Pingu-Io, alessandrobasi"
+#define PLUGIN_UNIQUE_DESCRIPTION "AMONGSPEAK!"
 
 static char* pluginID = NULL;
+static HANDLE thread = NULL;
 
 enum {
-	MENU_ID_CHANNEL_1 = 1,
+	MENU_ID_GLOBAL_1 = 1,
+	MENU_ID_CHANNEL_1,
 	MENU_ID_CHANNEL_2,
 };
 
@@ -89,6 +95,10 @@ void ts3plugin_shutdown() {
 		free(pluginID);
 		pluginID = NULL;
 	}
+
+	if(thread != NULL){
+		TerminateThread(thread, 0);
+	}
 }
 
 void ts3plugin_registerPluginID(const char* id) {
@@ -117,7 +127,8 @@ static struct PluginMenuItem* createMenuItem(enum PluginMenuType type, int id, c
 #define END_CREATE_MENUS (*menuItems)[n++] = NULL; assert(n == sz);
 
 void ts3plugin_initMenus(struct PluginMenuItem*** menuItems, char** menuIcon) {
-	BEGIN_CREATE_MENUS(2);
+	BEGIN_CREATE_MENUS(3);
+	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_GLOBAL, MENU_ID_GLOBAL_1, "Hook AmongUs", "icon.png");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_1, "Mute All", "mute_audio_icon.png");
 	CREATE_MENU_ITEM(PLUGIN_MENU_TYPE_CHANNEL, MENU_ID_CHANNEL_2, "Unmute All", "unmute_audio_icon.png");
 	END_CREATE_MENUS;
@@ -130,8 +141,66 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 	anyID* clients;
 	
 	switch(menuItemID){
-		case MENU_ID_CHANNEL_1:{
-			if(ts3Functions.getChannelClientList(serverConnectionHandlerID, selectedItemID, &clients) == ERROR_ok){
+		case MENU_ID_GLOBAL_1: {
+			if(FindWindow(NULL, "Among Us") != NULL){
+				if(thread != NULL){
+					TerminateThread(thread, 0);
+				}
+
+				thread = CreateThread(NULL, 0, &GameStatusCheckThread, serverConnectionHandlerID, 0, NULL);
+				
+			} else{
+				ts3Functions.logMessage("AmongUs not open!", LogLevel_WARNING, "", 0);
+			}
+
+			break;
+		}
+		case MENU_ID_CHANNEL_1: {
+			MuteAll(serverConnectionHandlerID);
+			break;
+		}
+		case MENU_ID_CHANNEL_2: {
+			UnMuteAll(serverConnectionHandlerID);
+			break;
+		}
+		default:{
+			break;
+		}
+	}
+}
+
+void GameStatusCheckThread(LPVOID serverConnectionHandlerID){
+	while(FindWindow(NULL, "Among Us") != NULL){
+		switch(OttieniStato()) {
+            case 0: 
+            case 2: {
+				UnMuteAll(serverConnectionHandlerID);
+                break;
+            }
+            case 1: {
+				MuteAll(serverConnectionHandlerID);
+                break;
+            }
+            default: {
+				ts3Functions.logMessage("Error!", LogLevel_WARNING, "", 0);
+				return;
+            }
+        }
+
+		Sleep(1000);
+	}
+
+	return;
+}
+
+void MuteAll(LPVOID serverConnectionHandlerID){
+	anyID* clients;
+	anyID* clientID;
+	uint64* channelID;
+
+	if(ts3Functions.getClientID(serverConnectionHandlerID, &clientID) == ERROR_ok){
+		if(ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID) == ERROR_ok){
+			if(ts3Functions.getChannelClientList(serverConnectionHandlerID, channelID, &clients) == ERROR_ok){
 				ts3Functions.requestMuteClients(serverConnectionHandlerID, clients, NULL);
 
 				ts3Functions.setClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, 1);
@@ -139,23 +208,25 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 				ts3Functions.freeMemory(clients);
 				ts3Functions.flushClientSelfUpdates(serverConnectionHandlerID, NULL);
 			}
-
-			break;
 		}
-		case MENU_ID_CHANNEL_2:{
-			if(ts3Functions.getChannelClientList(serverConnectionHandlerID, selectedItemID, &clients) == ERROR_ok){
+	}
+}
+
+void UnMuteAll(LPVOID serverConnectionHandlerID){
+	anyID* clients;
+	anyID* clientID;
+	uint64* channelID;
+
+	if(ts3Functions.getClientID(serverConnectionHandlerID, &clientID) == ERROR_ok){
+		if(ts3Functions.getChannelOfClient(serverConnectionHandlerID, clientID, &channelID) == ERROR_ok){
+			if(ts3Functions.getChannelClientList(serverConnectionHandlerID, channelID, &clients) == ERROR_ok){
 				ts3Functions.requestUnmuteClients(serverConnectionHandlerID, clients, NULL);
-		
+
 				ts3Functions.setClientSelfVariableAsInt(serverConnectionHandlerID, CLIENT_INPUT_MUTED, 0);
 
 				ts3Functions.freeMemory(clients);
 				ts3Functions.flushClientSelfUpdates(serverConnectionHandlerID, NULL);
 			}
-
-			break;
-		}
-		default:{
-			break;
 		}
 	}
 }

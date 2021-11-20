@@ -143,6 +143,13 @@ PLUGINS_EXPORTDLL const char* ts3plugin_keyDeviceName(const char* keyIdentifier)
 PLUGINS_EXPORTDLL const char* ts3plugin_displayKeyText(const char* keyIdentifier);
 PLUGINS_EXPORTDLL const char* ts3plugin_keyPrefix();
 
+/* THREAD */
+PLUGINS_EXPORTDLL void GameStatusCheckThread(LPVOID serverConnectionHandlerID);
+
+/* MUTE - UNMUTE */
+PLUGINS_EXPORTDLL void MuteAll(LPVOID serverConnectionHandlerID);
+PLUGINS_EXPORTDLL void UnMuteAll(LPVOID serverConnectionHandlerID);
+
 #ifdef __cplusplus
 }
 #endif
