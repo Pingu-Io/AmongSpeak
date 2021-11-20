@@ -1,6 +1,7 @@
 # AmongSpeak
 
-This TeamSpeak3 plugin detects when "in discussion" and "doing tasks" and (un)mute automatically the clients in the channel.
+This TeamSpeak3 plugin detects when "in discussion" and "doing tasks" and (un)mute automatically the clients in the channel.<br>
+**Last Among Us tested version: v2021.11.9.5s**
 
 ## Usage
 1. Open Among Us
