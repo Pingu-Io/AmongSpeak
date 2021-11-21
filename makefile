@@ -1,7 +1,7 @@
 CC = gcc
 LIBS = -lws2_32
 INCS = -I'include'
-ARGS = -std=c17 -Wall -g $(LIBS) $(INCS)
+ARGS = -std=c17 -Wall $(LIBS) $(INCS)
 
 SRC_DIR = src
 BUILD_DIR = build

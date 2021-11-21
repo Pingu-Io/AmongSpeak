@@ -1,4 +1,4 @@
-#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
+#ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <Windows.h>
