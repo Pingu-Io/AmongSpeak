@@ -1,11 +1,12 @@
 CC = gcc
-LIBS = -lws2_32
+LIBS = 
 INCS = -I'include'
-ARGS = -std=c17 -Wall $(LIBS) $(INCS)
+ARGS = -std=c17 -w -O2 $(LIBS) $(INCS) 
+# -Wall
 
 SRC_DIR = src
 BUILD_DIR = build
-APP_NAME = plugin.dll
+APP_NAME = amongspeak_win.dll
 
 plugin.o:
 	$(CC) -DBDLL -c $(SRC_DIR)/plugin.c -o $(BUILD_DIR)/plugin.o $(ARGS)
