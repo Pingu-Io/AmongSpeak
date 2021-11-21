@@ -7,7 +7,7 @@
 #ifndef PLUGIN_H
 #define PLUGIN_H
 
-#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
+#ifdef _WIN32
 #define PLUGINS_EXPORTDLL __declspec(dllexport)
 #else
 #define PLUGINS_EXPORTDLL __attribute__ ((visibility("default")))

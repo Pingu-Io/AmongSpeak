@@ -1,6 +1,4 @@
-#if defined(WIN32) || defined(__WIN32__) || defined(_WIN32)
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#ifdef _WIN32
 #include <Windows.h>
 #endif
 
@@ -57,7 +55,7 @@ const char* ts3plugin_name() {
 }
 
 const char* ts3plugin_version() {
-    return PLUGIN_UNIQUE_VERSION;
+	return PLUGIN_UNIQUE_VERSION;
 }
 
 int ts3plugin_apiVersion() {
@@ -65,29 +63,29 @@ int ts3plugin_apiVersion() {
 }
 
 const char* ts3plugin_author() {
-    return PLUGIN_UNIQUE_AUTHOR;
+	return PLUGIN_UNIQUE_AUTHOR;
 }
 
 const char* ts3plugin_description() {
-    return PLUGIN_UNIQUE_DESCRIPTION;
+	return PLUGIN_UNIQUE_DESCRIPTION;
 }
 
 void ts3plugin_setFunctionPointers(const struct TS3Functions funcs) {
-    ts3Functions = funcs;
+	ts3Functions = funcs;
 }
 
 int ts3plugin_init() {
-    char appPath[PATH_BUFSIZE];
-    char resourcesPath[PATH_BUFSIZE];
-    char configPath[PATH_BUFSIZE];
+	char appPath[PATH_BUFSIZE];
+	char resourcesPath[PATH_BUFSIZE];
+	char configPath[PATH_BUFSIZE];
 	char pluginPath[PATH_BUFSIZE];
 
-    ts3Functions.getAppPath(appPath, PATH_BUFSIZE);
-    ts3Functions.getResourcesPath(resourcesPath, PATH_BUFSIZE);
-    ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
+	ts3Functions.getAppPath(appPath, PATH_BUFSIZE);
+	ts3Functions.getResourcesPath(resourcesPath, PATH_BUFSIZE);
+	ts3Functions.getConfigPath(configPath, PATH_BUFSIZE);
 	ts3Functions.getPluginPath(pluginPath, PATH_BUFSIZE, pluginID);
 
-    return 0;
+	return 0;
 }
 
 void ts3plugin_shutdown() {
@@ -172,20 +170,20 @@ void ts3plugin_onMenuItemEvent(uint64 serverConnectionHandlerID, enum PluginMenu
 void GameStatusCheckThread(LPVOID serverConnectionHandlerID){
 	while(FindWindow(NULL, "Among Us") != NULL){
 		switch(OttieniStato()) {
-            case 0: 
-            case 2: {
+			case 0: 
+			case 2: {
 				UnMuteAll(serverConnectionHandlerID);
-                break;
-            }
-            case 1: {
+				break;
+			}
+			case 1: {
 				MuteAll(serverConnectionHandlerID);
-                break;
-            }
-            default: {
+				break;
+			}
+			default: {
 				ts3Functions.logMessage("Error!", LogLevel_WARNING, "", 0);
 				return;
-            }
-        }
+			}
+		}
 
 		Sleep(1000);
 	}
